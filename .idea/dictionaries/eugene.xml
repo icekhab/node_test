@@ -3,6 +3,7 @@
     <words>
       <w>bcrypt</w>
       <w>jsonwebtoken</w>
+      <w>mongo</w>
     </words>
   </dictionary>
 </component>
