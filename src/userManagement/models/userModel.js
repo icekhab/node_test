@@ -11,38 +11,60 @@ const userSchema = new Schema({
     lastName: {
         type: String,
         trim: true,
-        required: true
+        required: true,
     },
     firstName: {
         type: String,
         trim: true,
-        required: true
+        required: true,
     },
     login: {
         type: String,
         unique: true,
         lowercase: true,
         trim: true,
-        required: true
+        required: true,
     },
     password: {
         type: String,
-        required: true
+        required: true,
     },
     created: {
         type: Date,
-        default: Date.now
+        default: Date.now,
+    },
+    roleId: {
+        type: Schema.Types.ObjectId,
+        require: true,
     },
     jwtSecret: {
         type: String,
         required: true,
         select: false,
         default: () => crypto.randomBytes(256).toString('hex'),
-    }
+    },
+    createdAt: {
+        type: Date,
+        required: true,
+    },
+    updatedAt: {
+        type: Date,
+        required: true,
+    },
+},
+{
+    timestamps: true,
+    toObject: {
+        virtuals: true,
+    },
+    toJSON: {
+        virtuals: true,
+    },
 });
 
-userSchema.methods.comparePassword = async function(password) {
-    return await bcrypt.compare(password, this.password);
+userSchema.methods.comparePassword = async function comparePassword(password) {
+    const isPasswordValid = await bcrypt.compare(password, this.password);
+    return isPasswordValid;
 };
 
 userSchema.pre('save', async function beforeSave(next) {

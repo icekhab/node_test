@@ -27,11 +27,11 @@ process.on('SIGTERM', async () => {
     logger.info('Process is stopping...');
 });
 
-(async () => {
+(async function start() {
     try {
         const options = {
             autoReconnect: true,
-            useNewUrlParser: true
+            useNewUrlParser: true,
         };
 
         await mongoose.connect(MONGO_URI, options);
@@ -49,6 +49,6 @@ process.on('SIGTERM', async () => {
         setTimeout(start, 2000);
         logger.error(e);
     }
-})();
+}());
 
 module.exports = app;

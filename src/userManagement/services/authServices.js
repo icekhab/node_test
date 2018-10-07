@@ -1,16 +1,24 @@
-const _ = require("lodash");
+const _ = require('lodash');
 const HttpStatus = require('http-status-codes');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { User } = require('../models/userModel');
+const { Role } = require('../models/roleModel');
+const { ROLE } = require('../../utils/consts');
+
 const { TOKEN_EXPIRY } = process.env;
 
 class AuthService {
     static async signUp(req, res) {
         const user = new User(_.pick(req.body, ['login', 'firstName', 'lastName', 'password']));
+        const queryRole = { name: ROLE.USERS };
+        const role = await Role.findOne(queryRole, 'id name');
+        user.roleId = role.id;
         await user.save();
 
         const payload = {
             userId: user.id,
+            role: role.name,
         };
 
         const token = jwt.sign(payload, user.jwtSecret, { expiresIn: TOKEN_EXPIRY });
@@ -22,7 +30,7 @@ class AuthService {
     static async signIn(req, res) {
         const { login, password } = req.body;
         const query = { login };
-        const user = await User.findOne(query, 'password jwtSecret');
+        const user = await User.findOne(query, 'password jwtSecret roleId');
 
         if (!user) {
             res.status(HttpStatus.BAD_REQUEST).json({
@@ -46,8 +54,11 @@ class AuthService {
             return;
         }
 
+        const role = await Role.findOne({ _id: user.roleId });
+
         const payload = {
             userId: user.id,
+            role: role.name,
         };
 
         const token = jwt.sign(payload, user.jwtSecret, { expiresIn: TOKEN_EXPIRY });
@@ -82,7 +93,7 @@ class AuthService {
             return;
         }
 
-        const user = await User.findById(payload.userId, 'jwtSecret');
+        const user = await User.findById(payload.userId, 'jwtSecret roleId');
 
         if (!user) {
             res.sendStatus(HttpStatus.UNAUTHORIZED);
@@ -92,7 +103,8 @@ class AuthService {
         jwt.verify(token, user.jwtSecret);
 
         req.user = {
-            id: user.id,
+            id: payload.userId,
+            role: payload.role,
         };
 
         next();

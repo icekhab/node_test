@@ -2,6 +2,7 @@
   <dictionary name="eugene">
     <words>
       <w>bcrypt</w>
+      <w>crypto</w>
       <w>jsonwebtoken</w>
       <w>mongo</w>
     </words>
